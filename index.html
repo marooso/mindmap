@@ -11,7 +11,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 
 body {
-  background: #f5f3ef;
+  background: #ffffff;
   color: #1a1a1a;
   font-family: 'Noto Sans KR', sans-serif;
   font-weight: 300;
@@ -73,7 +73,7 @@ svg { width:100%; height:100%; }
   pointer-events: none;
   z-index: 100;
   background: rgba(245,243,239,.97);
-  border: 1px solid #e0ddd6;
+  border: 1px solid #bbb;
   padding: 14px 16px;
   max-width: 260px;
   display: none;
@@ -200,7 +200,7 @@ const C = {
   mediaL:  '#ccc',
 };
 
-const TYPE_KR = { series:'시리즈', ref:'참조', media:'매체' };
+const TYPE_KR = { series:'시리즈', keywords:'개념어', ref:'참조', media:'매체' };
 
 // ── 데이터 ──────────────────────────────────────
 const allN = [
@@ -214,50 +214,49 @@ const allN = [
   { id:'몽',      type:'series', desc:'태몽 · 접연 · 몽사.\n꿈의 시간성과 접붙임의 언어.' },
   { id:'인화',    type:'series', desc:'좌굴 연작.\n구부러지는 힘과 인쇄의 물성.' },
   { id:'면',      type:'series', desc:'동면 — 겨울의 얼굴.\n표면과 잠의 경계.' },
-
   // 조작 개념어
-  { id:'포획',    type:'series', desc:'카메라로 대상을 촬영하는 행동.\n강박 · 소유욕 · 폭력의 구조.' },
-  { id:'표본',    type:'series', desc:'포획된 대상의 일부 또는 전체.\n샬레 위에 심긴 픽셀 정보.' },
-
+  { id:'포획',         type:'keywords', desc:'카메라로 대상을 촬영하는 행동.\n강박 · 소유욕 · 폭력의 구조.' },
+  { id:'표본',         type:'keywords', desc:'포획된 대상의 일부 또는 전체.\n샬레 위에 심긴 픽셀 정보.' },
+  { id:'비-인간 생명', type:'keywords', desc:'폴립 · 지의류 · 군체.\n증식을 생존 문법으로 삼는 삶.' },
   // 철학 참조
-  { id:'광학적 무의식',        type:'ref', desc:'Walter Benjamin —\n카메라가 포착하는 무의식.\n렌즈가 보는 것, 인간이 보지 못하는 것.' },
-  { id:'푼크툼',               type:'ref', desc:'Roland Barthes, Camera Lucida.\n사진 속 찌르는 것 — 의도치 않은\n의미의 돌출과 상처.' },
-  { id:'아카이브 / 헤테로토피아', type:'ref', desc:'Michel Foucault.\n지식·권력으로서의 아카이브 +\n이질적 공간(헤테로토피아).' },
-  { id:'무하유지향',            type:'ref', desc:'莊子 — 아무것도 없는 곳.\n자연/인공의 경계가 녹는 상태.\n허(虛)의 철학적 근원.' },
-  { id:'리좀',                 type:'ref', desc:'Deleuze & Guattari —\n탈영토화와 재영토화.\n경계 없이 번지는 사유의 구조.' },
-
+  { id:'광학적 무의식', type:'ref', desc:'Walter Benjamin —\n카메라가 포착하는 무의식.\n렌즈가 보는 것, 인간이 보지 못하는 것.' },
+  { id:'푼크툼',        type:'ref', desc:'Roland Barthes, Camera Lucida.\n사진 속 찌르는 것 — 의도치 않은\n의미의 돌출과 상처.' },
+  { id:'무위론',        type:'ref', desc:'이기심과 편가르기로 인한 현대의 갈등 진단.\n내 욕심을 비우고(무아) 세상을 있는 그대로(자연) 인정.\n싸우지 않고 다 함께 평화롭게 사는 법.' },
+  { id:'리좀',          type:'ref', desc:'Deleuze & Guattari —\n탈영토화와 재영토화.\n경계 없이 번지는 사유의 구조.' },
   // 매체
-  { id:'렌즈 기반',  type:'media', desc:'세밀한 접사·거시 사진.\n광학적 무의식의 실천 도구.' },
-  { id:'AI 생성',    type:'media', desc:'Adobe Generative Fill — 프롬프트 없음.\n실패와 오류를 의미로 전환하는 방법론.' },
-  { id:'표본화',     type:'media', desc:'번호화·카탈로그.\n생물학적 채집 논리를 예술 실천으로.' },
-  { id:'피그먼트',   type:'media', desc:'피그먼트 잉크젯 프린트 · 캔버스 인화.\n물질의 층위를 가진 이미지.' },
-  { id:'영상',       type:'media', desc:'캠코더 · 싱글 채널 비디오 · 반복 재생.\n움직임으로 확장되는 이미지.' },
-  { id:'비-인간 생명', type:'media', desc:'폴립 · 지의류 · 군체.\n증식을 생존 문법으로 삼는 삶.' },
+  { id:'렌즈 기반', type:'media', desc:'세밀한 접사·거시 사진.\n광학적 무의식의 실천 도구.' },
+  { id:'AI 생성',   type:'media', desc:'Adobe Generative Fill — 프롬프트 없음.\n실패와 오류를 의미로 전환하는 방법론.' },
+  { id:'표본화',    type:'media', desc:'번호화·카탈로그.\n생물학적 채집 논리를 예술 실천으로.' },
+  { id:'프린트',    type:'media', desc:'피그먼트 잉크젯 프린트 · 캔버스 인화.\n물질의 층위를 가진 이미지.' },
+  { id:'영상',      type:'media', desc:'캠코더 · 싱글 채널 비디오 · 반복 재생.\n움직임으로 확장되는 이미지.' },
 ];
 
 const allL = [
   // 계보
-  { s:'배양',    t:'확산',    type:'lineage', lb:'성장 → 전파' },
-  { s:'배양',    t:'각화',    type:'lineage', lb:'표본 방법론 파생' },
-  { s:'배양',    t:'만연',    type:'lineage', lb:'생장의 논리' },
-  { s:'배양',    t:'면',      type:'lineage', lb:'표면의 변형' },
-  { s:'조우',    t:'인화',    type:'lineage', lb:'만남 → 물질적 흔적' },
-  { s:'인화',    t:'파노라마',type:'lineage', lb:'프린트 매체 확장' },
-  { s:'몽',      t:'조우',    type:'lineage', lb:'꿈 → 실제 만남' },
-  { s:'포획',    t:'표본',    type:'lineage', lb:'행위 → 결과물' },
-  { s:'표본',    t:'배양',    type:'lineage', lb:'표본이 배양으로' },
+  { s:'배양',  t:'확산',    type:'lineage', lb:'성장 → 전파' },
+  { s:'배양',  t:'각화',    type:'lineage', lb:'표본 방법론 파생' },
+  { s:'배양',  t:'만연',    type:'lineage', lb:'생장의 논리' },
+  { s:'배양',  t:'면',      type:'lineage', lb:'표면의 변형' },
+  { s:'조우',  t:'인화',    type:'lineage', lb:'만남 → 물질적 흔적' },
+  { s:'인화',  t:'파노라마',type:'lineage', lb:'프린트 매체 확장' },
+  { s:'몽',    t:'조우',    type:'lineage', lb:'꿈 → 실제 만남' },
+  { s:'포획',  t:'표본',    type:'lineage', lb:'행위 → 결과물' },
+  { s:'표본',  t:'배양',    type:'lineage', lb:'표본이 배양으로' },
 
   // 개념
-  { s:'광학적 무의식',         t:'배양',    type:'concept', lb:'무의식의 실천' },
-  { s:'광학적 무의식',         t:'각화',    type:'concept', lb:'피부·표면의 무의식' },
-  { s:'푼크툼',                t:'인화',    type:'concept', lb:'프린트의 찌름' },
-  { s:'푼크툼',                t:'조우',    type:'concept', lb:'만남의 찌름' },
-  { s:'아카이브 / 헤테로토피아', t:'배양',    type:'concept', lb:'표본화 = 아카이브 권력' },
-  { s:'아카이브 / 헤테로토피아', t:'파노라마',type:'concept', lb:'관찰의 시선' },
-  { s:'무하유지향',             t:'몽',      type:'concept', lb:'꿈과 현실의 경계' },
-  { s:'리좀',                  t:'만연',    type:'concept', lb:'번지는 구조' },
-  { s:'리좀',                  t:'확산',    type:'concept', lb:'탈영토화' },
-  { s:'리좀',                  t:'배양',    type:'concept', lb:'이질적 접합' },
+  { s:'광학적 무의식', t:'배양',    type:'concept', lb:'무의식의 실천' },
+  { s:'광학적 무의식', t:'각화',    type:'concept', lb:'피부·표면의 무의식' },
+  { s:'광학적 무의식', t:'조우',    type:'concept', lb:'렌즈의 대면' },
+  { s:'푼크툼',        t:'인화',    type:'concept', lb:'프린트의 찌름' },
+  { s:'푼크툼',        t:'조우',    type:'concept', lb:'만남의 찌름' },
+  { s:'무위론',        t:'몽',      type:'concept', lb:'비움과 꿈' },
+  { s:'무위론',        t:'면',      type:'concept', lb:'자연의 경계' },
+  { s:'무위론',        t:'비-인간 생명', type:'concept', lb:'인간 너머의 자연' },
+  { s:'리좀',          t:'만연',    type:'concept', lb:'번지는 구조' },
+  { s:'리좀',          t:'확산',    type:'concept', lb:'탈영토화' },
+  { s:'리좀',          t:'배양',    type:'concept', lb:'이질적 접합' },
+  { s:'비-인간 생명',  t:'배양',    type:'concept', lb:'생태계 모델' },
+  { s:'비-인간 생명',  t:'만연',    type:'concept', lb:'식물성 증식' },
 
   // 매체
   { s:'렌즈 기반', t:'배양',    type:'media', lb:'표본 접사' },
@@ -268,13 +267,11 @@ const allL = [
   { s:'AI 생성',   t:'만연',    type:'media', lb:'뻗어나가는 생성' },
   { s:'표본화',    t:'배양',    type:'media', lb:'번호화 채집' },
   { s:'표본화',    t:'각화',    type:'media', lb:'표면 채집' },
-  { s:'피그먼트',  t:'인화',    type:'media', lb:'피그먼트 인화' },
-  { s:'피그먼트',  t:'조우',    type:'media', lb:'피그먼트 프린트' },
-  { s:'피그먼트',  t:'파노라마',type:'media', lb:'캔버스 인화' },
+  { s:'프린트',    t:'인화',    type:'media', lb:'피그먼트 인화' },
+  { s:'프린트',    t:'조우',    type:'media', lb:'피그먼트 프린트' },
+  { s:'프린트',    t:'파노라마',type:'media', lb:'캔버스 인화' },
   { s:'영상',      t:'확산',    type:'media', lb:'3채널 캠코더' },
   { s:'영상',      t:'몽',      type:'media', lb:'싱글 채널 비디오' },
-  { s:'비-인간 생명', t:'배양', type:'media', lb:'생태계 모델' },
-  { s:'비-인간 생명', t:'만연', type:'media', lb:'식물성 증식' },
 ];
 
 // ── 상태 ─────────────────────────────────────────
