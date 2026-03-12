@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>마루소 — 작업 개관</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@200;300;400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #f5f3ef;
+  color: #1a1a1a;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 300;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
+
+svg { width:100%; height:100%; }
+
+/* ── 헤더 ── */
+#header {
+  position: fixed;
+  top: 28px; left: 32px;
+  pointer-events: none;
+  z-index: 10;
+}
+#header h1 {
+  font-size: 9px;
+  letter-spacing: .3em;
+  color: #bbb;
+  font-weight: 200;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+#header h2 {
+  font-size: 12px;
+  letter-spacing: .06em;
+  color: #333;
+  font-weight: 300;
+}
+
+/* ── 필터 버튼 ── */
+#filters {
+  position: fixed;
+  top: 28px; right: 32px;
+  display: flex;
+  gap: 5px;
+  z-index: 10;
+}
+.fbtn {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 300;
+  font-size: 8px;
+  letter-spacing: .14em;
+  padding: 5px 11px;
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #bbb;
+  cursor: pointer;
+  transition: all .2s;
+}
+.fbtn:hover { border-color: #aaa; color: #666; }
+.fbtn.on    { border-color: #999; color: #333; background: rgba(0,0,0,.03); }
+
+/* ── 툴팁 ── */
+#tt {
+  position: fixed;
+  pointer-events: none;
+  z-index: 100;
+  background: rgba(245,243,239,.97);
+  border: 1px solid #e0ddd6;
+  padding: 14px 16px;
+  max-width: 260px;
+  display: none;
+}
+.tt-type {
+  font-size: 7px;
+  letter-spacing: .28em;
+  color: #bbb;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  font-weight: 200;
+}
+.tt-name {
+  font-size: 13px;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+  line-height: 1.6;
+  font-weight: 300;
+}
+.tt-desc {
+  font-size: 9px;
+  color: #888;
+  line-height: 2;
+  font-weight: 200;
+}
+
+/* ── 범례 ── */
+#legend {
+  position: fixed;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 10;
+}
+.l-sec {
+  font-size: 6px;
+  letter-spacing: .3em;
+  color: #ccc;
+  text-transform: uppercase;
+  margin: 14px 0 8px;
+  font-weight: 200;
+}
+.l-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.l-label {
+  font-size: 8px;
+  letter-spacing: .04em;
+  color: #aaa;
+  font-weight: 200;
+}
+
+/* ── 통계 ── */
+#stat {
+  position: fixed;
+  bottom: 28px; left: 32px;
+  font-size: 7px;
+  letter-spacing: .15em;
+  color: #ccc;
+  z-index: 10;
+  font-weight: 200;
+}
+
+/* ── 힌트 ── */
+#hint {
+  position: fixed;
+  bottom: 28px; right: 32px;
+  font-size: 7px;
+  letter-spacing: .14em;
+  color: #ccc;
+  line-height: 2;
+  text-align: right;
+  z-index: 10;
+  font-weight: 200;
+}
+</style>
+</head>
+<body>
+
+<svg id="g"></svg>
+
+<div id="header">
+  <h1>Marooso · 작업 개관</h1>
+  <h2>작품 · 개념 · 매체의 관계망</h2>
+</div>
+
+<div id="filters">
+  <button class="fbtn on" data-a="lineage">계보</button>
+  <button class="fbtn on" data-a="concept">개념</button>
+  <button class="fbtn" data-a="media">매체</button>
+</div>
+
+<div id="legend">
+  <div class="l-sec">link</div>
+  <div class="l-item">
+    <svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="#aaa" stroke-width="1.2"/></svg>
+    <div class="l-label">시리즈 계보</div>
+  </div>
+  <div class="l-item">
+    <svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="#bbb" stroke-width="0.8" stroke-dasharray="4 3"/></svg>
+    <div class="l-label">개념 공명</div>
+  </div>
+  <div class="l-item">
+    <svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="#ccc" stroke-width="0.8" stroke-dasharray="8 5"/></svg>
+    <div class="l-label">매체 공유</div>
+  </div>
+</div>
+
+<div id="stat"><span id="nc">—</span> nodes · <span id="lc">—</span> links</div>
+<div id="hint">드래그 — 노드 이동<br>스크롤 — 확대 / 축소<br>클릭 — 고정 / 해제</div>
+
+<div id="tt"></div>
+
+<script>
+// ── 색상 ─────────────────────────────────────────
+const C = {
+  node:    '#1a1a1a',   // 모든 노드 통일
+  lineage: '#999',
+  concept: '#bbb',
+  mediaL:  '#ccc',
+};
+
+const TYPE_KR = { series:'시리즈', ref:'참조', media:'매체' };
+
+// ── 데이터 ──────────────────────────────────────
+const allN = [
+  // 시리즈
+  { id:'배양',    type:'series', desc:'실재 유기체 이미지와 AI 생성 풍경을 접합한다.\n픽셀 확산의 논리로 배양하는 가상의 생태계.' },
+  { id:'확산',    type:'series', desc:'픽셀이 프레임 바깥으로 번져나가는 풍경.\n캠코더 설치 · 3채널 영상.' },
+  { id:'조우',    type:'series', desc:'렌즈와 피사체의 대면.\n사물(死物) 연작 — 정지한 몸과 살아있는 눈.' },
+  { id:'파노라마',type:'series', desc:'수평으로 확장되는 풍경.\n유기(有機) · 만빙(灣氷).' },
+  { id:'각화',    type:'series', desc:'AI로 가공한 피부 질감의 표면.\n각질 — 탈락과 재생의 반복.' },
+  { id:'만연',    type:'series', desc:'덩굴처럼 번지는 형태.\n반복과 증식의 문법으로 생성된 화면.' },
+  { id:'몽',      type:'series', desc:'태몽 · 접연 · 몽사.\n꿈의 시간성과 접붙임의 언어.' },
+  { id:'인화',    type:'series', desc:'좌굴 연작.\n구부러지는 힘과 인쇄의 물성.' },
+  { id:'면',      type:'series', desc:'동면 — 겨울의 얼굴.\n표면과 잠의 경계.' },
+
+  // 조작 개념어
+  { id:'포획',    type:'series', desc:'카메라로 대상을 촬영하는 행동.\n강박 · 소유욕 · 폭력의 구조.' },
+  { id:'표본',    type:'series', desc:'포획된 대상의 일부 또는 전체.\n샬레 위에 심긴 픽셀 정보.' },
+
+  // 철학 참조
+  { id:'광학적 무의식',        type:'ref', desc:'Walter Benjamin —\n카메라가 포착하는 무의식.\n렌즈가 보는 것, 인간이 보지 못하는 것.' },
+  { id:'푼크툼',               type:'ref', desc:'Roland Barthes, Camera Lucida.\n사진 속 찌르는 것 — 의도치 않은\n의미의 돌출과 상처.' },
+  { id:'아카이브 / 헤테로토피아', type:'ref', desc:'Michel Foucault.\n지식·권력으로서의 아카이브 +\n이질적 공간(헤테로토피아).' },
+  { id:'무하유지향',            type:'ref', desc:'莊子 — 아무것도 없는 곳.\n자연/인공의 경계가 녹는 상태.\n허(虛)의 철학적 근원.' },
+  { id:'리좀',                 type:'ref', desc:'Deleuze & Guattari —\n탈영토화와 재영토화.\n경계 없이 번지는 사유의 구조.' },
+
+  // 매체
+  { id:'렌즈 기반',  type:'media', desc:'세밀한 접사·거시 사진.\n광학적 무의식의 실천 도구.' },
+  { id:'AI 생성',    type:'media', desc:'Adobe Generative Fill — 프롬프트 없음.\n실패와 오류를 의미로 전환하는 방법론.' },
+  { id:'표본화',     type:'media', desc:'번호화·카탈로그.\n생물학적 채집 논리를 예술 실천으로.' },
+  { id:'피그먼트',   type:'media', desc:'피그먼트 잉크젯 프린트 · 캔버스 인화.\n물질의 층위를 가진 이미지.' },
+  { id:'영상',       type:'media', desc:'캠코더 · 싱글 채널 비디오 · 반복 재생.\n움직임으로 확장되는 이미지.' },
+  { id:'비-인간 생명', type:'media', desc:'폴립 · 지의류 · 군체.\n증식을 생존 문법으로 삼는 삶.' },
+];
+
+const allL = [
+  // 계보
+  { s:'배양',    t:'확산',    type:'lineage', lb:'성장 → 전파' },
+  { s:'배양',    t:'각화',    type:'lineage', lb:'표본 방법론 파생' },
+  { s:'배양',    t:'만연',    type:'lineage', lb:'생장의 논리' },
+  { s:'배양',    t:'면',      type:'lineage', lb:'표면의 변형' },
+  { s:'조우',    t:'인화',    type:'lineage', lb:'만남 → 물질적 흔적' },
+  { s:'인화',    t:'파노라마',type:'lineage', lb:'프린트 매체 확장' },
+  { s:'몽',      t:'조우',    type:'lineage', lb:'꿈 → 실제 만남' },
+  { s:'포획',    t:'표본',    type:'lineage', lb:'행위 → 결과물' },
+  { s:'표본',    t:'배양',    type:'lineage', lb:'표본이 배양으로' },
+
+  // 개념
+  { s:'광학적 무의식',         t:'배양',    type:'concept', lb:'무의식의 실천' },
+  { s:'광학적 무의식',         t:'각화',    type:'concept', lb:'피부·표면의 무의식' },
+  { s:'푼크툼',                t:'인화',    type:'concept', lb:'프린트의 찌름' },
+  { s:'푼크툼',                t:'조우',    type:'concept', lb:'만남의 찌름' },
+  { s:'아카이브 / 헤테로토피아', t:'배양',    type:'concept', lb:'표본화 = 아카이브 권력' },
+  { s:'아카이브 / 헤테로토피아', t:'파노라마',type:'concept', lb:'관찰의 시선' },
+  { s:'무하유지향',             t:'몽',      type:'concept', lb:'꿈과 현실의 경계' },
+  { s:'리좀',                  t:'만연',    type:'concept', lb:'번지는 구조' },
+  { s:'리좀',                  t:'확산',    type:'concept', lb:'탈영토화' },
+  { s:'리좀',                  t:'배양',    type:'concept', lb:'이질적 접합' },
+
+  // 매체
+  { s:'렌즈 기반', t:'배양',    type:'media', lb:'표본 접사' },
+  { s:'렌즈 기반', t:'조우',    type:'media', lb:'대면 촬영' },
+  { s:'렌즈 기반', t:'각화',    type:'media', lb:'피부 접사' },
+  { s:'AI 생성',   t:'배양',    type:'media', lb:'Generative Fill' },
+  { s:'AI 생성',   t:'확산',    type:'media', lb:'생성 확장' },
+  { s:'AI 생성',   t:'만연',    type:'media', lb:'뻗어나가는 생성' },
+  { s:'표본화',    t:'배양',    type:'media', lb:'번호화 채집' },
+  { s:'표본화',    t:'각화',    type:'media', lb:'표면 채집' },
+  { s:'피그먼트',  t:'인화',    type:'media', lb:'피그먼트 인화' },
+  { s:'피그먼트',  t:'조우',    type:'media', lb:'피그먼트 프린트' },
+  { s:'피그먼트',  t:'파노라마',type:'media', lb:'캔버스 인화' },
+  { s:'영상',      t:'확산',    type:'media', lb:'3채널 캠코더' },
+  { s:'영상',      t:'몽',      type:'media', lb:'싱글 채널 비디오' },
+  { s:'비-인간 생명', t:'배양', type:'media', lb:'생태계 모델' },
+  { s:'비-인간 생명', t:'만연', type:'media', lb:'식물성 증식' },
+];
+
+// ── 상태 ─────────────────────────────────────────
+let active = new Set(['lineage', 'concept']);
+let sim, W, H;
+let pinnedId = null; // 클릭 고정 노드
+
+// ── SVG / zoom ───────────────────────────────────
+const svgEl = d3.select('#g');
+const zoomH = d3.zoom()
+  .scaleExtent([0.18, 5])
+  .on('zoom', e => zg.attr('transform', e.transform));
+svgEl.call(zoomH);
+svgEl.on('click', (e) => {
+  // 배경 클릭 → 고정 해제
+  if (e.target.tagName === 'svg' || e.target.tagName === 'g') {
+    pinnedId = null;
+    hideTT();
+  }
+});
+
+const zg = svgEl.append('g');
+const lg = zg.append('g');  // 링크
+const ng = zg.append('g');  // 노드
+const tg = zg.append('g');  // 레이블
+
+// ── 필터 버튼 ────────────────────────────────────
+document.querySelectorAll('.fbtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const a = btn.dataset.a;
+    if (active.has(a)) { active.delete(a); btn.classList.remove('on'); }
+    else               { active.add(a);    btn.classList.add('on'); }
+    build();
+  });
+});
+
+// ── 툴팁 ─────────────────────────────────────────
+const ttEl = document.getElementById('tt');
+
+function showTT(ev, d) {
+  ttEl.innerHTML =
+    `<div class="tt-type">${TYPE_KR[d.type] || d.type}</div>` +
+    `<div class="tt-name">${d.id}</div>` +
+    `<div class="tt-desc">${(d.desc || '').replace(/\n/g,'<br>')}</div>`;
+  ttEl.style.display = 'block';
+  moveTT(ev);
+}
+function moveTT(ev) {
+  let x = ev.clientX + 18, y = ev.clientY - 12;
+  if (x + 270 > window.innerWidth)  x = ev.clientX - 275;
+  if (y + ttEl.offsetHeight + 20 > window.innerHeight) y = ev.clientY - ttEl.offsetHeight;
+  ttEl.style.left = x + 'px';
+  ttEl.style.top  = y + 'px';
+}
+function hideTT() {
+  if (!pinnedId) ttEl.style.display = 'none';
+}
+
+// ── 드래그 ───────────────────────────────────────
+function makeDrag() {
+  return d3.drag()
+    .on('start', (e, d) => {
+      if (!e.active) sim.alphaTarget(0.3).restart();
+      d.fx = d.x; d.fy = d.y;
+    })
+    .on('drag', (e, d) => {
+      const t = d3.zoomTransform(svgEl.node());
+      d.fx = (e.sourceEvent.clientX - t.x) / t.k;
+      d.fy = (e.sourceEvent.clientY - t.y) / t.k;
+    })
+    .on('end', (e, d) => {
+      if (!e.active) sim.alphaTarget(0);
+      // 고정된 노드가 아니면 fx/fy 해제
+      if (pinnedId !== d.id) { d.fx = null; d.fy = null; }
+    });
+}
+
+// ── 빌드 ─────────────────────────────────────────
+function build() {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  svgEl.attr('width', W).attr('height', H);
+
+  const ns  = allN.map(d => ({ ...d }));
+  const visL = allL.filter(l => active.has(l.type));
+  const ls  = visL.map(d => ({ source:d.s, target:d.t, type:d.type, lb:d.lb }));
+
+  document.getElementById('nc').textContent = ns.length;
+  document.getElementById('lc').textContent = ls.length;
+
+  if (sim) sim.stop();
+
+  sim = d3.forceSimulation(ns)
+    .force('link', d3.forceLink(ls)
+      .id(d => d.id)
+      .distance(d => d.type === 'lineage' ? 115 : d.type === 'concept' ? 155 : 100)
+      .strength(0.4)
+    )
+    .force('charge', d3.forceManyBody().strength(-260))
+    .force('center', d3.forceCenter(W / 2, H / 2).strength(0.04))
+    .force('collide', d3.forceCollide(38))
+    .force('x', d3.forceX(W / 2).strength(0.025))
+    .force('y', d3.forceY(H / 2).strength(0.025));
+
+  // ── 링크 ──
+  lg.selectAll('*').remove();
+  const linkSel = lg.selectAll('line').data(ls).enter().append('line')
+    .attr('stroke', d =>
+      d.type === 'lineage' ? C.lineage :
+      d.type === 'concept' ? C.concept : C.mediaL)
+    .attr('stroke-width', d => d.type === 'lineage' ? 1.2 : 0.7)
+    .attr('stroke-opacity', d => d.type === 'lineage' ? 0.6 : 0.35)
+    .attr('stroke-dasharray', d =>
+      d.type === 'concept' ? '4 3' :
+      d.type === 'media'   ? '8 5' : null);
+
+  // ── 노드 ──
+  ng.selectAll('*').remove();
+  const nodeSel = ng.selectAll('g').data(ns).enter().append('g')
+    .style('cursor', 'pointer')
+    .call(makeDrag())
+    .on('mouseover', (e, d) => {
+      if (!pinnedId) showTT(e, d);
+      // 연결 링크 하이라이트
+      linkSel
+        .attr('stroke-opacity', l =>
+          (l.source.id === d.id || l.target.id === d.id)
+            ? (l.type === 'lineage' ? 0.9 : 0.6)
+            : 0.08)
+        .attr('stroke-width', l =>
+          (l.source.id === d.id || l.target.id === d.id)
+            ? (l.type === 'lineage' ? 1.8 : 1.1)
+            : (l.type === 'lineage' ? 1.2 : 0.7));
+    })
+    .on('mousemove', (e, d) => { if (!pinnedId) moveTT(e); })
+    .on('mouseout', (e, d) => {
+      if (!pinnedId) hideTT();
+      linkSel
+        .attr('stroke-opacity', l => l.type === 'lineage' ? 0.6 : 0.35)
+        .attr('stroke-width', l => l.type === 'lineage' ? 1.2 : 0.7);
+    })
+    .on('click', (e, d) => {
+      e.stopPropagation();
+      if (pinnedId === d.id) {
+        pinnedId = null;
+        hideTT();
+        d.fx = null; d.fy = null;
+      } else {
+        pinnedId = d.id;
+        showTT(e, d);
+        d.fx = d.x; d.fy = d.y;
+      }
+    });
+
+  // 원 — 모든 노드 동일한 스타일
+  nodeSel.append('circle')
+    .attr('r', 7)
+    .attr('fill', 'none')
+    .attr('stroke', C.node)
+    .attr('stroke-width', 0.8)
+    .attr('opacity', 0.5);
+
+  // 중심 점
+  nodeSel.append('circle')
+    .attr('r', 1.5)
+    .attr('fill', C.node)
+    .attr('opacity', 0.7);
+
+  // ── 레이블 ──
+  tg.selectAll('*').remove();
+  tg.selectAll('text').data(ns).enter().append('text')
+    .attr('text-anchor', 'middle')
+    .attr('font-family', "'Noto Sans KR', sans-serif")
+    .attr('font-weight', '300')
+    .attr('font-size', '10px')
+    .attr('fill', C.node)
+    .attr('opacity', 0.75)
+    .attr('dy', '2.2em')  // 원 아래에 배치
+    .text(d => d.id);
+
+  // ── 틱 ──
+  sim.on('tick', () => {
+    linkSel
+      .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+
+    ng.selectAll('g').attr('transform', d => `translate(${d.x},${d.y})`);
+    tg.selectAll('text').attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+}
+
+window.addEventListener('resize', build);
+build();
+</script>
+</body>
+</html>
